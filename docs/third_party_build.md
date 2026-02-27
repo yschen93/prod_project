@@ -16,7 +16,7 @@
 
 ### 源码包位置（输入）
 
-- 三方源码压缩包：`/home/xz_ys/3rd/*.tar.gz`
+- 三方源码压缩包：`prod_project/third_party/tarballs/*.tar.gz`
   - `abseil-cpp-20260107.1.tar.gz`
   - `Catch2-3.13.0.tar.gz`
   - `cpp-httplib-0.34.0.tar.gz`
@@ -67,9 +67,9 @@
 
 脚本内部核心路径变量：
 
-- `tar_dir`：三方 tarball 目录（当前指向 `/home/xz_ys/3rd`）
-- `src_dir`：解压目录（当前为 `${tar_dir}/src`）
-- `build_dir`：构建目录（当前为 `${tar_dir}/build`，即 `/home/xz_ys/3rd/build`）
+- `tarballs_dir`：三方 tarball 目录（当前为 `prod_project/third_party/tarballs`）
+- `src_dir`：解压目录（当前为 `${work_root}/src`，即 `/home/xz_ys/3rd/src`）
+- `build_dir`：构建目录（当前为 `${work_root}/build`，即 `/home/xz_ys/3rd/build`）
 - `prefix_dir`：安装前缀（固定为 `prod_project/third_party/ins`）
 
 ### 每个库的 CMake 配置摘要

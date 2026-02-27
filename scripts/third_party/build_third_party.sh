@@ -3,11 +3,12 @@ set -euo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${root_dir}/../.." && pwd)"
-tar_dir="${repo_root}/../3rd"
+work_root="${repo_root}/../3rd"
+tarballs_dir="${repo_root}/third_party/tarballs"
 
 prefix_dir="${repo_root}/third_party/ins"
-src_dir="${tar_dir}/src"
-build_dir="${tar_dir}/build"
+src_dir="${work_root}/src"
+build_dir="${work_root}/build"
 
 cmake_bin="cmake"
 nproc_bin="nproc"
@@ -163,16 +164,16 @@ AssertSharedLibrarySymlinks() {
 }
 
 echo "[third_party] prefix: ${prefix_dir}"
-echo "[third_party] tar:    ${tar_dir}"
+echo "[third_party] tar:    ${tarballs_dir}"
 echo "[third_party] src:    ${src_dir}"
 
 echo "[third_party] extracting sources"
-ExtractTarball "${tar_dir}/abseil-cpp-20260107.1.tar.gz" "${src_dir}/abseil" 1
-ExtractTarball "${tar_dir}/Catch2-3.13.0.tar.gz" "${src_dir}/catch2" 1
-ExtractTarball "${tar_dir}/spdlog-1.17.0.tar.gz" "${src_dir}/spdlog" 1
-ExtractTarball "${tar_dir}/json-3.12.0.tar.gz" "${src_dir}/json" 1
-ExtractTarball "${tar_dir}/cpp-httplib-0.34.0.tar.gz" "${src_dir}/cpp-httplib" 1
-ExtractTarball "${tar_dir}/yaml-cpp-yaml-cpp-0.9.0.tar.gz" "${src_dir}/yaml-cpp" 0
+ExtractTarball "${tarballs_dir}/abseil-cpp-20260107.1.tar.gz" "${src_dir}/abseil" 1
+ExtractTarball "${tarballs_dir}/Catch2-3.13.0.tar.gz" "${src_dir}/catch2" 1
+ExtractTarball "${tarballs_dir}/spdlog-1.17.0.tar.gz" "${src_dir}/spdlog" 1
+ExtractTarball "${tarballs_dir}/json-3.12.0.tar.gz" "${src_dir}/json" 1
+ExtractTarball "${tarballs_dir}/cpp-httplib-0.34.0.tar.gz" "${src_dir}/cpp-httplib" 1
+ExtractTarball "${tarballs_dir}/yaml-cpp-yaml-cpp-0.9.0.tar.gz" "${src_dir}/yaml-cpp" 0
 
 EnsureLayoutDirs
 

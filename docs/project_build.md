@@ -11,7 +11,7 @@
 
 ## 目录约定
 
-- 三方源码压缩包目录：`/home/xz_ys/3rd/*.tar.gz`
+- 三方源码压缩包目录：`prod_project/third_party/tarballs/*.tar.gz`
 - 三方解压目录：`/home/xz_ys/3rd/src/`
 - 三方构建目录：`/home/xz_ys/3rd/build/`
 - 三方 install 前缀：`prod_project/third_party/ins/`

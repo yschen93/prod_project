@@ -4,9 +4,9 @@ dist/
 
 third_party/ins/
 third_party/third_party_dependencies.tar.gz
+third_party/tarballs/*.tmp
 
 .DS_Store
 *.swp
 *.swo
 *.tmp
-
