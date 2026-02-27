@@ -1,0 +1,6 @@
+bind_host: "127.0.0.1"
+port: 18080
+worker_threads: 4
+log_level: "info"
+greeting: "hello api"
+

@@ -1,0 +1,12 @@
+build/
+out/
+dist/
+
+third_party/ins/
+third_party/third_party_dependencies.tar.gz
+
+.DS_Store
+*.swp
+*.swo
+*.tmp
+
