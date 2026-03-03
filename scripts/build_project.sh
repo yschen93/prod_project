@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "${root_dir}/.." && pwd)"
+scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${scripts_dir}/.." && pwd)"
 
 build_root="${repo_root}/build"
 build_root="${BUILD_ROOT:-${build_root}}"
-install_prefix="${INSTALL_PREFIX:-${repo_root}/out}"
+install_prefix="${INSTALL_PREFIX:-${repo_root}/ins}"
 build_type="${BUILD_TYPE:-Release}"
-prefix_path="${CMAKE_PREFIX_PATH:-}"
-default_tp_prefix="${repo_root}/third_party/ins"
-
-if [[ -z "${prefix_path}" && -d "${default_tp_prefix}" ]]; then
-  prefix_path="${default_tp_prefix}"
-fi
 
 mkdir -p "${build_root}"
 
@@ -37,9 +31,6 @@ for proj in "${projects[@]}"; do
     -DCMAKE_BUILD_TYPE="${build_type}"
     -DCMAKE_INSTALL_PREFIX="${install_prefix}"
   )
-  if [[ -n "${prefix_path}" ]]; then
-    args+=(-DCMAKE_PREFIX_PATH="${prefix_path}")
-  fi
 
   cmake "${args[@]}"
   cmake --build "${bld}" --config "${build_type}" -j"$(nproc)"

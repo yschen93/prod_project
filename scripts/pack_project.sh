@@ -3,7 +3,7 @@ set -euo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${root_dir}/.." && pwd)"
-tar_dir="${repo_root}/../3rd"
+tar_dir="${repo_root}/third_party"
 
 tp_prefix="${repo_root}/third_party/ins"
 stage_dir="${tar_dir}/stage/prod_project"

@@ -3,7 +3,7 @@ set -euo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${root_dir}/../.." && pwd)"
-work_root="${repo_root}/../3rd"
+work_root="${repo_root}/third_party"
 tarballs_dir="${repo_root}/third_party/tarballs"
 
 prefix_dir="${repo_root}/third_party/ins"
@@ -66,8 +66,6 @@ ConfigureBuildAndTest() {
   rm -rf "${bld}"
   "${cmake_bin}" -S "${src}" -B "${bld}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH="${prefix_dir}" \
-    -DCMAKE_INSTALL_PREFIX="${prefix_dir}" \
     "$@"
   "${cmake_bin}" --build "${bld}" --config Release -j"$(${nproc_bin})"
   ctest --test-dir "${bld}" --output-on-failure
@@ -82,8 +80,6 @@ ConfigureBuildTestInstall() {
   rm -rf "${bld}"
   "${cmake_bin}" -S "${src}" -B "${bld}" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH="${prefix_dir}" \
-    -DCMAKE_INSTALL_PREFIX="${prefix_dir}" \
     "$@"
   "${cmake_bin}" --build "${bld}" --config Release -j"$(${nproc_bin})"
   ctest --test-dir "${bld}" --output-on-failure
@@ -193,7 +189,6 @@ echo "[third_party] build+install spdlog (shared)"
 ConfigureBuildInstall spdlog "${src_dir}/spdlog" "${build_dir}/spdlog" \
   -DBUILD_SHARED_LIBS=ON \
   -DSPDLOG_BUILD_SHARED=ON \
-  -DSPDLOG_BUILD_STATIC=OFF \
   -DSPDLOG_BUILD_EXAMPLE=OFF \
   -DSPDLOG_BUILD_TESTS=OFF \
   -DSPDLOG_BUILD_BENCH=OFF

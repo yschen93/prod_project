@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 
 project(verify_find_package LANGUAGES CXX)
 
+set(third_ins_path "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/ins")
+if(IS_DIRECTORY "${third_ins_path}")
+  list(PREPEND CMAKE_PREFIX_PATH "${third_ins_path}")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
