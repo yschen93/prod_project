@@ -11,32 +11,22 @@ build_type="${BUILD_TYPE:-Release}"
 
 mkdir -p "${build_root}"
 
-projects=()
-while IFS= read -r -d '' f; do
-  projects+=("$(dirname "${f}")")
-done < <(find "${repo_root}/src" -mindepth 2 -maxdepth 2 -type f -name CMakeLists.txt -print0 2>/dev/null || true)
+echo "Building project from root: ${repo_root}"
+echo "Build dir: ${build_root}"
+echo "Install prefix: ${install_prefix}"
 
-if [[ ${#projects[@]} -eq 0 ]]; then
-  echo "No CMake projects found under ${repo_root}/src" >&2
-  exit 2
+# Configure
+cmake -S "${repo_root}" -B "${build_root}" \
+  -DCMAKE_BUILD_TYPE="${build_type}" \
+  -DCMAKE_INSTALL_PREFIX="${install_prefix}"
+
+# Build
+cmake --build "${build_root}" --config "${build_type}" -j"$(nproc)"
+
+# Test
+ctest --test-dir "${build_root}" --output-on-failure
+
+# Install (optional)
+if [[ "${INSTALL:-0}" == "1" ]]; then
+  cmake --install "${build_root}" --config "${build_type}"
 fi
-
-for proj in "${projects[@]}"; do
-  name="$(basename "${proj}")"
-  bld="${build_root}/${name}"
-
-  args=(
-    -S "${proj}"
-    -B "${bld}"
-    -DCMAKE_BUILD_TYPE="${build_type}"
-    -DCMAKE_INSTALL_PREFIX="${install_prefix}"
-  )
-
-  cmake "${args[@]}"
-  cmake --build "${bld}" --config "${build_type}" -j"$(nproc)"
-  ctest --test-dir "${bld}" --output-on-failure
-
-  if [[ "${INSTALL:-0}" == "1" ]]; then
-    cmake --install "${bld}" --config "${build_type}"
-  fi
-done

@@ -2,25 +2,25 @@ cmake_minimum_required(VERSION 3.20)
 
 project(integrated_demo VERSION 0.1.0 LANGUAGES CXX)
 
-set(third_ins_path "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/ins")
-if(IS_DIRECTORY "${third_ins_path}")
-  list(PREPEND CMAKE_PREFIX_PATH "${third_ins_path}")
+
+if(NOT TARGET absl::strings)
+  find_package(absl CONFIG REQUIRED)
 endif()
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+if(NOT TARGET Catch2::Catch2)
+  find_package(Catch2 CONFIG REQUIRED)
 endif()
-
-find_package(absl CONFIG REQUIRED)
-find_package(Catch2 CONFIG REQUIRED)
-find_package(httplib CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
-find_package(yaml-cpp CONFIG REQUIRED)
+if(NOT TARGET httplib::httplib)
+  find_package(httplib CONFIG REQUIRED)
+endif()
+if(NOT TARGET nlohmann_json::nlohmann_json)
+  find_package(nlohmann_json CONFIG REQUIRED)
+endif()
+if(NOT TARGET spdlog::spdlog)
+  find_package(spdlog CONFIG REQUIRED)
+endif()
+if(NOT TARGET yaml-cpp::yaml-cpp)
+  find_package(yaml-cpp CONFIG REQUIRED)
+endif()
 
 add_library(integrated_demo_core)
 target_sources(integrated_demo_core

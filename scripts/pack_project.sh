@@ -1,78 +1,64 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "${root_dir}/.." && pwd)"
-tar_dir="${repo_root}/third_party"
+scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${scripts_dir}/.." && pwd)"
 
-tp_prefix="${repo_root}/third_party/ins"
-stage_dir="${tar_dir}/stage/prod_project"
+build_root="${repo_root}/build"
 dist_dir="${repo_root}/dist"
-
+stage_dir="${dist_dir}/stage"
 tar_name="prod_project_delivery.tar.gz"
 out_path="${dist_dir}/${tar_name}"
 
-if [[ ! -d "${tp_prefix}" ]]; then
-  echo "missing third_party prefix: ${tp_prefix}" >&2
-  exit 1
-fi
+echo "Packing project..."
+echo "Root: ${repo_root}"
+echo "Dist dir: ${dist_dir}"
+echo "Stage dir: ${stage_dir}"
 
+# Clean previous stage/dist
 rm -rf "${stage_dir}"
 mkdir -p "${stage_dir}" "${dist_dir}"
 
-INSTALL=1 INSTALL_PREFIX="${stage_dir}" "${repo_root}/scripts/build_project.sh"
+# 1. Install project to stage directory
+# We use the build script with INSTALL=1 and INSTALL_PREFIX
+# Note: build_project.sh uses CMAKE_INSTALL_PREFIX
+export INSTALL=1
+export INSTALL_PREFIX="${stage_dir}"
+export BUILD_ROOT="${build_root}"
+
+# Ensure project is built and installed
+"${scripts_dir}/build_project.sh"
+
+# 2. Copy Runtime Libraries (Third Party)
+# With FetchContent, shared libraries are typically built in build/_deps/<pkg>-build/
+# We need to find and copy them to stage/lib.
+# Also need to handle RPATH or LD_LIBRARY_PATH for the final package, 
+# but for now we just copy the .so files next to binaries or in lib/
 
 mkdir -p "${stage_dir}/lib"
-mkdir -p "${stage_dir}/config"
 
-if [[ -d "${stage_dir}/share/integrated_demo/config" ]]; then
-  cp -a "${stage_dir}/share/integrated_demo/config/." "${stage_dir}/config/"
-fi
-
-CopyRuntimeLibsForBinary() {
-  local exe_path="$1"
-
-  if [[ ! -x "${exe_path}" ]]; then
-    return
-  fi
-
-  local ldd_out
-  ldd_out="$(ldd "${exe_path}" || true)"
-  printf "%s\n" "${ldd_out}" > "${stage_dir}/share/ldd_$(basename "${exe_path}").txt"
-
-  while IFS= read -r line; do
-    local lib_token
-    lib_token="$(printf "%s\n" "${line}" | awk '{print $1}')"
-    local lib_path
-    lib_path="$(printf "%s\n" "${line}" | awk '{print $3}')"
-    if [[ -n "${lib_path}" && "${lib_path}" == ${tp_prefix}/lib/* ]]; then
-      local base
-      base="$(basename "${lib_path}")"
-      local stem
-      stem="$(printf "%s\n" "${base}" | sed -E 's/(\.so)(\..*)?$/\1/')"
-      cp -a "${tp_prefix}/lib/${stem}"* "${stage_dir}/lib/" 2>/dev/null || true
-      continue
-    fi
-
-    if [[ "${lib_token}" == lib*.so* ]]; then
-      local stem
-      stem="$(printf "%s\n" "${lib_token}" | sed -E 's/(\.so)(\..*)?$/\1/')"
-      cp -a "${tp_prefix}/lib/${stem}"* "${stage_dir}/lib/" 2>/dev/null || true
-    fi
-  done <<< "${ldd_out}"
+# Helper to copy shared libs from build tree
+CopyBuildSharedLibs() {
+  local search_dir="$1"
+  find "${search_dir}" -name "lib*.so*" -type f -exec cp -a {} "${stage_dir}/lib/" \;
+  # Also copy symlinks if any (FetchContent build usually produces real files or symlinks)
+  find "${search_dir}" -name "lib*.so*" -type l -exec cp -a {} "${stage_dir}/lib/" \;
 }
 
-mkdir -p "${stage_dir}/share"
-
-if [[ -d "${stage_dir}/bin" ]]; then
-  while IFS= read -r -d '' exe; do
-    CopyRuntimeLibsForBinary "${exe}"
-  done < <(find "${stage_dir}/bin" -maxdepth 1 -type f -executable -print0)
+echo "Copying runtime libraries..."
+# Search in build/_deps for shared libraries
+if [[ -d "${build_root}/_deps" ]]; then
+    CopyBuildSharedLibs "${build_root}/_deps"
 fi
 
-rm -f "${stage_dir}/manifest.txt"
-(cd "${stage_dir}" && find . \( -type f -o -type l \) -print | sort -u) > "${stage_dir}/manifest.txt"
+# Clean up lib directory (remove cmake files, pkgconfig, etc if mistakenly copied, though find above is specific to .so)
 
-rm -f "${out_path}"
-tar -czf "${out_path}" -C "$(dirname "${stage_dir}")" "$(basename "${stage_dir}")"
-echo "${out_path}"
+# 3. Create Manifest
+echo "Creating manifest..."
+(cd "${stage_dir}" && find . \( -type f -o -type l \) | sort > manifest.txt)
+
+# 4. Tarball
+echo "Creating tarball: ${out_path}"
+tar -czf "${out_path}" -C "${dist_dir}" stage
+
+echo "Done. Package is at: ${out_path}"
