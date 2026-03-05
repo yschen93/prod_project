@@ -5,10 +5,10 @@
 
 #include <spdlog/logger.h>
 
-namespace integrated_demo
-{
+namespace integrated_demo {
 
-std::shared_ptr<spdlog::logger> CreateAsyncLogger(const std::string& name, const std::string& level);
+std::shared_ptr<spdlog::logger>
+CreateAsyncLogger(const std::string& name,
+                  const std::string& level);
 
 }
-

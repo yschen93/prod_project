@@ -7,24 +7,22 @@
 
 #include "integrated_demo/AppConfig.h"
 
-namespace integrated_demo
-{
+namespace integrated_demo {
 
-class RestServer
-{
+class RestServer {
 public:
-  RestServer(AppConfig cfg, std::shared_ptr<spdlog::logger> logger);
+    RestServer(AppConfig cfg,
+               std::shared_ptr<spdlog::logger> logger);
 
-  bool Listen();
-  void Stop();
+    bool Listen();
+    void Stop();
 
 private:
-  void RegisterRoutes();
+    void RegisterRoutes();
 
-  AppConfig cfg_;
-  std::shared_ptr<spdlog::logger> logger_;
-  httplib::Server server_;
+    AppConfig cfg_;
+    std::shared_ptr<spdlog::logger> logger_;
+    httplib::Server server_;
 };
 
-}
-
+}  // namespace integrated_demo

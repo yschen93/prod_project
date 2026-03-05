@@ -84,3 +84,22 @@ include(CTest)
 enable_testing()
 
 add_subdirectory(src/integrated_demo)
+
+# --- Tools Integration ---
+find_program(CLANG_FORMAT clang-format)
+if(CLANG_FORMAT)
+  add_custom_target(
+    format
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --format
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running clang-format on source files..."
+  )
+  add_custom_target(
+    check-format
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --check
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Checking code format..."
+  )
+else()
+  message(WARNING "clang-format not found. Format targets will not be available.")
+endif()
