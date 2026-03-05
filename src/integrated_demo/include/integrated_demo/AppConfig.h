@@ -15,7 +15,7 @@ struct AppConfig {
     std::string log_level{"info"};
     std::string greeting{"hello"};
 
-    nlohmann::json ToJson() const;
+  [[nodiscard]] nlohmann::json ToJson() const;
 };
 
 std::optional<AppConfig>

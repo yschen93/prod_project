@@ -83,6 +83,20 @@ set(BUILD_SHARED_LIBS OFF)
 include(CTest)
 enable_testing()
 
+# --- Clang-Tidy Integration ---
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+
+if(ENABLE_CLANG_TIDY)
+  find_program(CLANG_TIDY clang-tidy)
+  if(CLANG_TIDY)
+    message(STATUS "Found clang-tidy: ${CLANG_TIDY}")
+    # Run clang-tidy on all targets created after this
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY}")
+  else()
+    message(WARNING "clang-tidy not found, but ENABLE_CLANG_TIDY is ON")
+  endif()
+endif()
+
 add_subdirectory(src/integrated_demo)
 
 # --- Tools Integration ---

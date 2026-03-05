@@ -7,6 +7,8 @@
 
 #include "integrated_demo/AppConfig.h"
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-do-while)
+
 TEST_CASE("YamlConfigLoad", "[config]")
 {
     const std::string yaml_text = R"(
@@ -20,9 +22,11 @@ greeting: "hello world"
     auto cfg_opt =
         integrated_demo::LoadConfigFromYamlString(yaml_text);
     REQUIRE(cfg_opt.has_value());
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
     REQUIRE(cfg_opt->port == 19090);
     REQUIRE(cfg_opt->worker_threads == 2);
     REQUIRE(cfg_opt->log_level == "info");
+    // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 TEST_CASE("JsonOverride", "[config]")
@@ -43,3 +47,5 @@ TEST_CASE("AbseilStringSplit", "[absl]")
     REQUIRE(parts.size() == 3);
     REQUIRE(parts[0] == "a");
 }
+
+// NOLINTEND(cppcoreguidelines-avoid-do-while)
