@@ -40,7 +40,9 @@ Checks:
   -readability-make-member-function-const,
   -readability-named-parameter,
   -readability-qualified-auto,
-  -readability-suspicious-call-argument
+  -readability-suspicious-call-argument,
+  google-readability-casting
+HeaderFilterRegex: 'integrated_demo'
 WarningsAsErrors: ''
 FormatStyle:     file
 ExtraArgs:       ['-std=c++20']
@@ -69,4 +71,3 @@ CheckOptions:
     value:           lower_case
   - key:             readability-implicit-bool-conversion.AllowPointerConditions
     value:           'true'
-...
