@@ -44,6 +44,14 @@ target_link_libraries(integrated_demo_core
     httplib::httplib
 )
 
+# Link against 'anl' (Asynchronous Name Lookups) if needed on Linux/CentOS
+if(UNIX AND NOT APPLE)
+  find_library(LIB_ANL anl)
+  if(LIB_ANL)
+    target_link_libraries(integrated_demo_core PUBLIC ${LIB_ANL})
+  endif()
+endif()
+
 add_executable(integrated_demo_server src/server_main.cpp)
 target_link_libraries(integrated_demo_server PRIVATE integrated_demo_core)
 

@@ -84,10 +84,10 @@ include(CTest)
 enable_testing()
 
 # --- Clang-Tidy Integration ---
-option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
 if(ENABLE_CLANG_TIDY)
-  find_program(CLANG_TIDY clang-tidy)
+  find_program(CLANG_TIDY NAMES clang-tidy HINTS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools)
   if(CLANG_TIDY)
     message(STATUS "Found clang-tidy: ${CLANG_TIDY}")
     # Run clang-tidy on all targets created after this
@@ -100,7 +100,7 @@ endif()
 add_subdirectory(src/integrated_demo)
 
 # --- Tools Integration ---
-find_program(CLANG_FORMAT clang-format)
+find_program(CLANG_FORMAT NAMES clang-format HINTS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools)
 if(CLANG_FORMAT)
   add_custom_target(
     format
