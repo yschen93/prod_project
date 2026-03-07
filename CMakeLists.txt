@@ -87,7 +87,16 @@ enable_testing()
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
 if(ENABLE_CLANG_TIDY)
-  find_program(CLANG_TIDY NAMES clang-tidy HINTS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools)
+  # Prefer tools/bin/clang-tidy if it exists
+  find_program(CLANG_TIDY NAMES clang-tidy 
+               PATHS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools
+               NO_DEFAULT_PATH)
+  
+  # Fallback to system search if not found in tools
+  if(NOT CLANG_TIDY)
+    find_program(CLANG_TIDY NAMES clang-tidy)
+  endif()
+
   if(CLANG_TIDY)
     message(STATUS "Found clang-tidy: ${CLANG_TIDY}")
     # Run clang-tidy on all targets created after this
@@ -100,7 +109,15 @@ endif()
 add_subdirectory(src/integrated_demo)
 
 # --- Tools Integration ---
-find_program(CLANG_FORMAT NAMES clang-format HINTS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools)
+# Prefer tools/bin/clang-format if it exists
+find_program(CLANG_FORMAT NAMES clang-format 
+             PATHS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools
+             NO_DEFAULT_PATH)
+
+# Fallback to system search if not found in tools
+if(NOT CLANG_FORMAT)
+  find_program(CLANG_FORMAT NAMES clang-format)
+endif()
 if(CLANG_FORMAT)
   add_custom_target(
     format
