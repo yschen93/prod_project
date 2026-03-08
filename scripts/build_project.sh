@@ -4,8 +4,7 @@ set -euo pipefail
 scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${scripts_dir}/.." && pwd)"
 
-build_root="${repo_root}/build"
-build_root="${BUILD_ROOT:-${build_root}}"
+build_root="${BUILD_ROOT:-${repo_root}/build}"
 install_prefix="${INSTALL_PREFIX:-${repo_root}/ins}"
 build_type="${BUILD_TYPE:-Release}"
 

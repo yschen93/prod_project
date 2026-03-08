@@ -89,7 +89,7 @@ option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 if(ENABLE_CLANG_TIDY)
   # Prefer tools/bin/clang-tidy if it exists
   find_program(CLANG_TIDY NAMES clang-tidy 
-               PATHS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools
+               PATHS ${CMAKE_SOURCE_DIR}/tools/bin
                NO_DEFAULT_PATH)
   
   # Fallback to system search if not found in tools
@@ -111,23 +111,24 @@ add_subdirectory(src/integrated_demo)
 # --- Tools Integration ---
 # Prefer tools/bin/clang-format if it exists
 find_program(CLANG_FORMAT NAMES clang-format 
-             PATHS ${CMAKE_SOURCE_DIR}/tools/bin ${CMAKE_SOURCE_DIR}/tools
+             PATHS ${CMAKE_SOURCE_DIR}/tools/bin
              NO_DEFAULT_PATH)
 
 # Fallback to system search if not found in tools
 if(NOT CLANG_FORMAT)
   find_program(CLANG_FORMAT NAMES clang-format)
 endif()
+
 if(CLANG_FORMAT)
   add_custom_target(
     format
-    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --format
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --format --binary "${CLANG_FORMAT}"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-format on source files..."
   )
   add_custom_target(
     check-format
-    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --check
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/format_project.sh --check --binary "${CLANG_FORMAT}"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Checking code format..."
   )

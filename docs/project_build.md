@@ -6,9 +6,10 @@
 
 ## 交付包特点
 
-- 包含项目可执行文件。
-- 包含运行时所需的第三方动态库（`.so` 文件），无需目标机器预装这些库。
-- 目录结构自包含，便于部署。
+- **开箱即用**: 解压后即可直接运行，无需安装额外依赖。
+- **自包含依赖**: 包含所有运行时所需的第三方动态库（`.so` 文件）。
+- **配置完备**: 自动包含默认配置文件。
+- **目录结构**: 标准化的 `bin`, `lib`, `config` 结构。
 
 ## 目录约定
 
@@ -36,10 +37,13 @@
 
 该脚本会执行以下步骤：
 
-1.  **安装项目**：调用 `build_project.sh` 并设置安装前缀（staging area），将项目可执行文件安装到临时目录。
-2.  **收集依赖库**：从构建目录（`build/_deps`）中扫描并收集所有第三方动态库（`.so`），复制到交付包的 `lib/` 目录。
-3.  **生成清单**：生成包含包内所有文件的 `manifest.txt`。
-4.  **打包**：将 staging 目录打包为 `prod_project_delivery.tar.gz`。
+1.  **安装项目**：调用 `build_project.sh` 将项目安装到临时目录。
+2.  **智能依赖分析**：
+    *   遍历 `bin` 目录下的所有可执行文件。
+    *   使用 `ldd` 对照构建目录下的原始二进制文件进行分析。
+    *   自动提取并拷贝所需的第三方动态库到 `lib/` 目录。
+3.  **配置拷贝**：将配置文件拷贝到 `bin/config` 和根目录 `config`，确保无论在何处启动都能找到配置。
+4.  **打包与清理**：生成 `prod_project_delivery.tar.gz` 并自动清理临时文件。
 
 **执行命令：**
 
@@ -49,33 +53,40 @@
 
 ## 交付包结构与运行
 
-解压 `prod_project_delivery.tar.gz` 后，目录结构如下（示例）：
+解压 `prod_project_delivery.tar.gz` 后，你会得到一个名为 `prod_project_delivery` 的目录：
 
 ```text
-stage/
+prod_project_delivery/
 ├── bin/
 │   ├── integrated_demo_server
 │   ├── integrated_demo_client
+│   ├── config/              # 配置文件副本（供 bin 目录下运行时使用）
+│   │   └── server.yaml
 │   └── ...
 ├── lib/
-│   ├── libspdlog.so
-│   ├── libyaml-cpp.so
-│   ├── libCatch2.so
+│   ├── libspdlog.so.1.17
+│   ├── libyaml-cpp.so.0.9
 │   └── ...
-├── share/
-│   └── ...
-└── manifest.txt
+├── config/                  # 配置文件副本（供根目录下运行时使用）
+│   └── server.yaml
+└── manifest.txt             # 文件清单
 ```
 
 **运行说明：**
 
-由于第三方库放置在 `lib/` 目录下，运行可执行文件时可能需要设置 `LD_LIBRARY_PATH`，或者依赖于构建时设置的 `RPATH`（`$ORIGIN/../lib`）。
+你可以选择以下任意一种方式运行，均无需手动设置 `LD_LIBRARY_PATH`：
 
+**方式一：在根目录运行（推荐）**
 ```bash
-# 解压
 tar -xzf prod_project_delivery.tar.gz
-cd stage
-
-# 运行 (假设 RPATH 已正确设置)
+cd prod_project_delivery
 ./bin/integrated_demo_server
 ```
+
+**方式二：进入 bin 目录运行**
+```bash
+cd prod_project_delivery/bin
+./integrated_demo_server
+```
+
+二进制文件已内置 RPATH (`$ORIGIN/../lib`)，会自动寻找同级目录下的 `../lib` 库文件。
