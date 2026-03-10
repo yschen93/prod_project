@@ -156,3 +156,10 @@ target_compile_options(tsan_target PRIVATE -fsanitize=thread -g -O1)
 target_link_options(tsan_target PRIVATE -fsanitize=thread)
 target_link_libraries(tsan_target PRIVATE Threads::Threads)
 
+# --- Performance Target ---
+
+# Perf Demo Target (Optimized for profiling)
+add_executable(perf_target src/performance/perf_demo.cpp)
+target_compile_options(perf_target PRIVATE -g -O2 -fno-omit-frame-pointer)
+target_link_options(perf_target PRIVATE -g -O2)
+
