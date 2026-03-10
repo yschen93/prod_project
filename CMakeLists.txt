@@ -135,3 +135,24 @@ if(CLANG_FORMAT)
 else()
   message(WARNING "clang-format not found. Format targets will not be available.")
 endif()
+
+# --- Sanitizer Targets ---
+
+find_package(Threads REQUIRED)
+
+# AddressSanitizer (ASan)
+add_executable(asan_target src/sanitizers/asan/asan_test.cpp)
+target_compile_options(asan_target PRIVATE -fsanitize=address -fno-omit-frame-pointer -g -O0)
+target_link_options(asan_target PRIVATE -fsanitize=address)
+
+# UndefinedBehaviorSanitizer (UBSan)
+add_executable(ubsan_target src/sanitizers/ubsan/ubsan_test.cpp)
+target_compile_options(ubsan_target PRIVATE -fsanitize=undefined -g -O1)
+target_link_options(ubsan_target PRIVATE -fsanitize=undefined)
+
+# ThreadSanitizer (TSan)
+add_executable(tsan_target src/sanitizers/tsan/tsan_test.cpp)
+target_compile_options(tsan_target PRIVATE -fsanitize=thread -g -O1)
+target_link_options(tsan_target PRIVATE -fsanitize=thread)
+target_link_libraries(tsan_target PRIVATE Threads::Threads)
+
