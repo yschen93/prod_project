@@ -1,44 +1,29 @@
 #!/usr/bin/env bash
+#
+# Copyright (c) 2025 Your Company. All rights reserved.
+#
+# Author: Your Name <your.email@example.com>
+# Created: 2025-01-01
+# Description:
+#   Packages the project for distribution.
+#   Builds the project, copies runtime dependencies, and creates a tarball.
+#
+
 set -euo pipefail
 
-project_name="prod_project_delivery"
+# --- Constants ---
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly PROJECT_NAME="prod_project_delivery"
+readonly BUILD_ROOT="${REPO_ROOT}/build"
+readonly DIST_DIR="${REPO_ROOT}/dist"
+readonly STAGE_DIR="${DIST_DIR}/${PROJECT_NAME}"
+readonly TAR_NAME="${PROJECT_NAME}.tar.gz"
+readonly OUT_PATH="${DIST_DIR}/${TAR_NAME}"
 
-scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "${scripts_dir}/.." && pwd)"
+# --- Helper Functions ---
 
-build_root="${repo_root}/build"
-dist_dir="${repo_root}/dist"
-stage_dir="${dist_dir}/${project_name}"
-tar_name="${project_name}.tar.gz"
-out_path="${dist_dir}/${tar_name}"
-
-echo "Packing project..."
-echo "Root: ${repo_root}"
-echo "Dist dir: ${dist_dir}"
-echo "Stage dir: ${stage_dir}"
-
-# Clean previous stage/dist
-rm -rf "${stage_dir}"
-mkdir -p "${stage_dir}" "${dist_dir}"
-
-# 1. Install project to stage directory
-# We use the build script with INSTALL=1 and INSTALL_PREFIX
-# Note: build_project.sh uses CMAKE_INSTALL_PREFIX
-export INSTALL=1
-export INSTALL_PREFIX="${stage_dir}"
-export BUILD_ROOT="${build_root}"
-
-# Ensure project is built and installed
-"${scripts_dir}/build_project.sh"
-
-# 2. Copy Runtime Libraries (Third Party)
-# Instead of blindly copying from _deps, we use ldd to find actual runtime dependencies
-# and copy them to stage/lib. This ensures we get exactly what the binaries need.
-
-mkdir -p "${stage_dir}/lib"
-
-# Helper to copy dependencies
-CopyDependencies() {
+copy_dependencies() {
   local binary="$1"
   local dest_lib_dir="$2"
   
@@ -46,14 +31,13 @@ CopyDependencies() {
   
   # Use ldd to find dependencies, filter out system libs (libc, libstdc++, etc.)
   # We assume system libs are available on target machine.
-  # Adjust the grep filter if you need to bundle libstdc++ or others.
   
   # CRITICAL FIX: The binary in stage/bin has RPATH set to $ORIGIN/../lib, which is empty right now.
   # So ldd on stage binary will fail to find libs.
   # We must run ldd on the ORIGINAL binary in build directory which has correct build RPATH.
   
   local bin_name=$(basename "${binary}")
-  local build_bin=$(find "${build_root}" -name "${bin_name}" -type f -executable | head -n 1)
+  local build_bin=$(find "${BUILD_ROOT}" -name "${bin_name}" -type f -executable | head -n 1)
   
   if [[ -z "${build_bin}" ]]; then
     echo "Warning: Could not find build binary for ${bin_name}, skipping dependency check."
@@ -70,17 +54,44 @@ CopyDependencies() {
     # or custom locations.
     # A simple heuristic: if it comes from our build directory, copy it.
     
-    if [[ "${lib_path}" == *"${build_root}"* ]]; then
+    if [[ "${lib_path}" == *"${BUILD_ROOT}"* ]]; then
       echo "  Bundling: ${lib_name}"
       cp -L "${lib_path}" "${dest_lib_dir}/"
     fi
   done
 }
 
+# --- Main Execution ---
+
+echo "Packing project..."
+echo "Root: ${REPO_ROOT}"
+echo "Dist dir: ${DIST_DIR}"
+echo "Stage dir: ${STAGE_DIR}"
+
+# Clean previous stage/dist
+rm -rf "${STAGE_DIR}"
+mkdir -p "${STAGE_DIR}" "${DIST_DIR}"
+
+# 1. Install project to stage directory
+# We use the build script with INSTALL=1 and INSTALL_PREFIX
+# Note: build_project.sh uses CMAKE_INSTALL_PREFIX
+export INSTALL=1
+export INSTALL_PREFIX="${STAGE_DIR}"
+export BUILD_ROOT="${BUILD_ROOT}"
+
+# Ensure project is built and installed
+"${SCRIPT_DIR}/build_project.sh"
+
+# 2. Copy Runtime Libraries (Third Party)
+# Instead of blindly copying from _deps, we use ldd to find actual runtime dependencies
+# and copy them to stage/lib. This ensures we get exactly what the binaries need.
+
+mkdir -p "${STAGE_DIR}/lib"
+
 echo "Copying runtime libraries..."
 # Find all executables in stage/bin and resolve their dependencies
-find "${stage_dir}/bin" -type f -executable | while read -r bin; do
-  CopyDependencies "${bin}" "${stage_dir}/lib"
+find "${STAGE_DIR}/bin" -type f -executable | while read -r bin; do
+  copy_dependencies "${bin}" "${STAGE_DIR}/lib"
 done
 
 # 3. Copy Config Files
@@ -89,35 +100,25 @@ done
 # To make it work out-of-the-box when running from bin directory (or via wrapper),
 # we copy config directory to bin/config.
 
-if [[ -d "${stage_dir}/share/integrated_demo/config" ]]; then
+if [[ -d "${STAGE_DIR}/share/integrated_demo/config" ]]; then
   echo "Copying config files..."
   # Copy to bin/config (for running inside bin/)
-  cp -r "${stage_dir}/share/integrated_demo/config" "${stage_dir}/bin/"
+  cp -r "${STAGE_DIR}/share/integrated_demo/config" "${STAGE_DIR}/bin/"
   # Copy to root/config (for running from root via ./bin/xxx)
-  cp -r "${stage_dir}/share/integrated_demo/config" "${stage_dir}/"
+  cp -r "${STAGE_DIR}/share/integrated_demo/config" "${STAGE_DIR}/"
 fi
-
-# 4. Create Start Scripts (Optional but recommended)
-# Create a wrapper script to set LD_LIBRARY_PATH if RPATH fails or for safety
-# cat <<EOF > "${stage_dir}/run.sh"
-# #!/bin/bash
-# DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
-# export LD_LIBRARY_PATH="\${DIR}/lib:\${LD_LIBRARY_PATH}"
-# exec "\${DIR}/bin/integrated_demo_server" "\$@"
-# EOF
-# chmod +x "${stage_dir}/run.sh"
 
 # 4. Create Manifest
 echo "Creating manifest..."
-(cd "${stage_dir}" && find . \( -type f -o -type l \) | sort > manifest.txt)
+(cd "${STAGE_DIR}" && find . \( -type f -o -type l \) | sort > manifest.txt)
 
 # 5. Tarball
-echo "Creating tarball: ${out_path}"
+echo "Creating tarball: ${OUT_PATH}"
 # Tar the directory with the project name
-tar -czf "${out_path}" -C "${dist_dir}" "${project_name}"
+tar -czf "${OUT_PATH}" -C "${DIST_DIR}" "${PROJECT_NAME}"
 
 # 6. Cleanup
 echo "Cleaning up temporary files..."
-rm -rf "${stage_dir}"
+rm -rf "${STAGE_DIR}"
 
-echo "Done. Package is at: ${out_path}"
+echo "Done. Package is at: ${OUT_PATH}"

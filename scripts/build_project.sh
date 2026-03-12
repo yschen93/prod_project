@@ -1,21 +1,34 @@
 #!/usr/bin/env bash
+#
+# Copyright (c) 2025 Your Company. All rights reserved.
+#
+# Author: Your Name <your.email@example.com>
+# Created: 2025-01-01
+# Description:
+#   Builds the project using CMake.
+#   Supports debug/release builds and installation.
+#
+
 set -euo pipefail
 
-scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "${scripts_dir}/.." && pwd)"
+# --- Constants ---
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-build_root="${BUILD_ROOT:-${repo_root}/build}"
-install_prefix="${INSTALL_PREFIX:-${repo_root}/ins}"
+# --- Main Execution ---
+
+build_root="${BUILD_ROOT:-${REPO_ROOT}/build}"
+install_prefix="${INSTALL_PREFIX:-${REPO_ROOT}/ins}"
 build_type="${BUILD_TYPE:-Release}"
 
 mkdir -p "${build_root}"
 
-echo "Building project from root: ${repo_root}"
+echo "Building project from root: ${REPO_ROOT}"
 echo "Build dir: ${build_root}"
 echo "Install prefix: ${install_prefix}"
 
 # Configure
-cmake -S "${repo_root}" -B "${build_root}" \
+cmake -S "${REPO_ROOT}" -B "${build_root}" \
   -DCMAKE_BUILD_TYPE="${build_type}" \
   -DCMAKE_INSTALL_PREFIX="${install_prefix}" \
   -DENABLE_CLANG_TIDY=OFF

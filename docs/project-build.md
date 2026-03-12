@@ -1,6 +1,6 @@
-# 项目编译与交付（dist）说明
+# 项目编译与交付指南
 
-本文档描述“项目交付包”的编译与打包流程。
+本文档描述了项目交付包的编译与打包流程。
 
 交付包输出目录：`prod_project/dist/`
 
@@ -13,7 +13,7 @@
 
 ## 目录约定
 
-- 项目源码目录：`prod_project/src/`
+- 源码目录：`prod_project/src/`
 - 构建目录：`prod_project/build/`
 - 交付输出目录：`prod_project/dist/`
 

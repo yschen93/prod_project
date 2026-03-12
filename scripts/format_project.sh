@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
+#
+# Copyright (c) 2025 Your Company. All rights reserved.
+#
+# Author: Your Name <your.email@example.com>
+# Created: 2025-01-01
+# Description:
+#   Runs clang-format on the project source files.
+#   Can run in check mode (dry-run) or format mode (in-place).
+#
+
 set -euo pipefail
 
-# Help function
+# --- Help Function ---
 show_help() {
   echo "Usage: $(basename "$0") [OPTIONS] [PATH...]"
   echo
   echo "Options:"
-  echo "  --check       Run in dry-run mode (check only, exit 1 on error)"
-  echo "  --format      Run in format mode (modify files in-place, default)"
+  echo "  --check       Run in dry-run mode (check only, exit 1 on error, default)"
+  echo "  --format      Run in format mode (modify files in-place)"
   echo "  --binary PATH Use a specific clang-format binary (absolute or relative path)"
   echo "  --help        Show this help message"
   echo
@@ -20,8 +30,10 @@ show_help() {
   echo "  Ignores build/, dist/, third_party/ directories when scanning directories."
 }
 
+# --- Main Execution ---
+
 # Parse arguments
-MODE="format"
+MODE="check"
 TARGET_PATHS=()
 CLANG_FORMAT_BIN_OVERRIDE=""
 
@@ -66,8 +78,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Resolve project root and clang-format path
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
 CLANG_FORMAT_BIN=""
 
 if [[ -n "${CLANG_FORMAT_BIN_OVERRIDE}" ]]; then

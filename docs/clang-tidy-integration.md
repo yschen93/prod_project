@@ -1,23 +1,23 @@
-# Clang-Tidy 集成技术实施文档
+# Clang-Tidy 集成指南
 
-本文档详细记录了 `prod_project` 项目集成 `clang-tidy` 静态代码分析工具的全过程，包括配置、问题修复及后续维护建议。
+本文档详细介绍了将 `clang-tidy` 静态分析工具集成到 `prod_project` 中的过程，包括配置、问题修复以及维护建议。
 
 ## 1. 集成步骤
 
 ### 1.1 环境确认
-项目使用 `clang-tidy` (LLVM version 18.1.3) 进行静态分析。
+项目使用 `clang-tidy` (LLVM 版本 18.1.3) 进行静态分析。
 
 ### 1.2 配置文件 (.clang-tidy)
-在项目根目录创建并维护了 `.clang-tidy` 配置文件，启用了包括 `modernize`, `readability`, `performance`, `bugprone`, `cppcoreguidelines` 等在内的全面检查集。
+项目根目录下维护了一个 `.clang-tidy` 配置文件，启用了一套全面的检查，包括 `modernize`（现代化）、`readability`（可读性）、`performance`（性能）、`bugprone`（易错点）、`cppcoreguidelines`（C++核心准则）等。
 
-配置已针对项目进行了微调，包括：
-- 启用了详细的命名规范检查（如宏大写、成员变量小写加下划线等）。
+配置已针对项目进行了微调：
+- 启用了详细的命名规范检查（例如，宏大写，带下划线的小写成员变量）。
 - 设置了命名空间注释风格。
-- 调整了部分规则的严格程度（如允许隐式布尔转换）。
+- 调整了部分规则的严格程度（例如，允许隐式布尔转换）。
 
 ### 1.3 CMake 集成
 在 `CMakeLists.txt` 中添加了 `ENABLE_CLANG_TIDY` 选项（默认为 ON）。
-通过设置 `CMAKE_CXX_CLANG_TIDY` 变量，在编译目标时自动运行 `clang-tidy`。
+通过设置 `CMAKE_CXX_CLANG_TIDY` 变量，在编译目标时会自动运行 `clang-tidy`。
 
 ```cmake
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
@@ -29,17 +29,17 @@ if(ENABLE_CLANG_TIDY)
 endif()
 ```
 
-## 2. 问题修复过程
+## 2. 问题修复流程
 
-### 2.1 典型缺陷修复 (验证阶段)
-通过引入包含典型缺陷的测试文件 `src/integrated_demo/src/bad_code.cpp` 进行了集成效果验证。修复了内存泄漏、未初始化变量、缓冲区溢出等问题。
-**注：验证完成后，该测试文件已被移除。**
+### 2.1 典型缺陷修复（验证阶段）
+通过引入包含典型缺陷的测试文件 `src/integrated_demo/src/bad_code.cpp` 进行了集成验证。修复了内存泄漏、未初始化变量和缓冲区溢出等问题。
+**注意：验证完成后，该测试文件已被移除。**
 
 ### 2.2 现有代码优化
-- **RestServer.cpp**: 将转义的 JSON 字符串改为 Raw String Literal (`R"({...})"`)，提高可读性。
-- **AppConfig.h**: 为 `ToJson()` 方法添加 `[[nodiscard]]` 属性，防止返回值被忽略。
+- **RestServer.cpp**: 将转义的 JSON 字符串更改为原始字符串字面量 (`R"({...})"`) 以提高可读性。
+- **AppConfig.h**: 为 `ToJson()` 方法添加 `[[nodiscard]]` 属性，以防止返回值被忽略。
 - **Logging.cpp**:
-    - 为单行 `if` 语句添加了大括号，增强代码稳健性。
+    - 为单行 `if` 语句添加大括号，增强代码稳健性。
     - 针对 `CreateAsyncLogger` 函数参数易混淆问题 (`bugprone-easily-swappable-parameters`)，添加了 `NOLINT` 压制注释（因 API 变更成本较高）。
 - **main 函数**: 在 `client_main.cpp` 和 `server_main.cpp` 中添加了 `try-catch` 块，防止异常逃逸 (`bugprone-exception-escape`)。
 - **指针运算**: 对 `argv` 的访问添加了 `NOLINT` 压制，因其为标准 C++ 入口点写法。
@@ -57,7 +57,7 @@ cmake --build build
 
 为了简化 `clang-tidy` 的使用，避免每次手动配置 CMake，提供了自动化脚本 `scripts/static_analysis.sh`。
 
-### 使用方法
+### 用法
 
 ```bash
 ./scripts/static_analysis.sh
@@ -68,7 +68,7 @@ cmake --build build
 2. 执行清理并强制进行全量构建，以触发完整的代码扫描。
 3. 利用多核并行编译提高分析速度。
 
-## 5. 后续维护建议
+## 5. 维护建议
 
 1.  **日常开发**: 保持 `ENABLE_CLANG_TIDY=ON`，在编码阶段即时发现问题。
 2.  **CI/CD**: 在持续集成流程中包含此构建步骤，作为质量门禁的一部分。

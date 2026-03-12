@@ -9,7 +9,7 @@
 - **工具位置**: `tools/bin/clang-format`
 - **配置文件**: 项目根目录下的 `.clang-format`
 
-**注意**：你不需要手动安装系统级的 `clang-format`，脚本会自动使用 `tools/bin` 下的版本。如果该位置没有工具，脚本会报错。
+**注意**：你不需要手动安装系统级的 `clang-format`。脚本会自动使用 `tools/bin` 下的版本。如果该位置没有工具，脚本会报错。
 
 ## 2. 自动化脚本
 
@@ -18,14 +18,14 @@
 ### 用法
 
 ```bash
-# 格式化整个项目（原地修改）
+# 检查整个项目（只读，显示差异，默认行为）
 ./scripts/format_project.sh
 
-# 检查整个项目（只读，显示差异）
-./scripts/format_project.sh --check
+# 格式化整个项目（原地修改）
+./scripts/format_project.sh --format
 
 # 格式化指定文件或目录
-./scripts/format_project.sh src/main.cpp include/
+./scripts/format_project.sh --format src/main.cpp include/
 ./scripts/format_project.sh --check src/integrated_demo/
 ```
 

@@ -1,6 +1,6 @@
-# prod_project Sanitizers 集成指南
+# Sanitizers 集成指南
 
-该项目集成了对 **AddressSanitizer (ASan)**、**UndefinedBehaviorSanitizer (UBSan)** 和 **ThreadSanitizer (TSan)** 的支持。这些工具可以帮助在开发过程中检测内存错误、未定义行为和并发问题。
+本项目集成了对 **AddressSanitizer (ASan)**、**UndefinedBehaviorSanitizer (UBSan)** 和 **ThreadSanitizer (TSan)** 的支持。这些工具可以帮助在开发过程中检测内存错误、未定义行为和并发问题。
 
 ## 1. 目录结构
 

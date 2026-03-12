@@ -63,7 +63,7 @@ perf record -F 99 -e cpu-clock -g -- ./perf_target
 perf script > out.perf
 ```
 
-### 第四步：折叠堆栈 (Stack Collapse)
+### 第三步：折叠堆栈 (Stack Collapse)
 
 使用 FlameGraph 工具集中的 `stackcollapse-perf.pl` 将调用栈折叠成单行格式，以便后续处理。
 

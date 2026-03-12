@@ -1,30 +1,32 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+#
+# Copyright (c) 2025 Your Company. All rights reserved.
+#
+# Author: Your Name <your.email@example.com>
+# Created: 2025-01-01
+# Description:
+#   Downloads and builds LLVM tools (clang-format, clang-tidy) from source.
+#   Installs them into the local tools/ directory.
+#
 
-# Get the absolute path of the script directory
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# Get the project root directory (assuming script is in scripts/)
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+set -euo pipefail
 
-# --- Configuration ---
+# --- Constants ---
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly LLVM_WORK_DIR="${PROJECT_ROOT}/third_party/llvm"
+readonly TOOLS_DIR="${PROJECT_ROOT}/tools"
+readonly BUILD_DIR="${LLVM_WORK_DIR}/build"
+readonly EXTRACT_DIR="${LLVM_WORK_DIR}/src"
+
+# --- Main Execution ---
+
 # Find LLVM tarball with wildcard pattern
 # Sort by name (version) descending and pick the first one to prefer newer versions if multiple exist
-LLVM_TARBALL=$(find "${PROJECT_ROOT}/third_party/llvm" -maxdepth 1 -name "llvm*.tar.gz" | sort -r | head -n 1)
+LLVM_TARBALL=$(find "${LLVM_WORK_DIR}" -maxdepth 1 -name "llvm*.tar.gz" | sort -r | head -n 1)
 
-# Output directory for tools
-TOOLS_DIR="${PROJECT_ROOT}/tools"
-
-# Base directory for LLVM work (under third_party/llvm)
-LLVM_WORK_DIR="${PROJECT_ROOT}/third_party/llvm"
-
-# Temporary directory for building
-BUILD_DIR="${LLVM_WORK_DIR}/build"
-# Temporary directory for extracting source
-EXTRACT_DIR="${LLVM_WORK_DIR}/src"
-
-# --- Pre-flight Checks ---
-# Check if LLVM tarball exists
-if [ -z "${LLVM_TARBALL}" ]; then
+# Pre-flight Checks
+if [[ -z "${LLVM_TARBALL}" ]]; then
     echo "Error: No LLVM tarball (llvm*.tar.gz) found in ${LLVM_WORK_DIR}"
     exit 1
 fi
@@ -36,10 +38,8 @@ echo "LLVM work directory: ${LLVM_WORK_DIR}"
 echo "Build directory: ${BUILD_DIR}"
 echo "Extraction directory: ${EXTRACT_DIR}"
 
-# --- Preparation ---
-# Create tools directory
+# Preparation
 mkdir -p "${TOOLS_DIR}"
-# Create LLVM work directory
 mkdir -p "${LLVM_WORK_DIR}"
 
 # Clean up old temporary directories if they exist
@@ -50,7 +50,7 @@ rm -rf "${EXTRACT_DIR}"
 mkdir -p "${BUILD_DIR}"
 mkdir -p "${EXTRACT_DIR}"
 
-# --- Extraction ---
+# Extraction
 echo "Extracting LLVM source..."
 tar -xf "${LLVM_TARBALL}" -C "${EXTRACT_DIR}"
 
@@ -58,14 +58,14 @@ tar -xf "${LLVM_TARBALL}" -C "${EXTRACT_DIR}"
 # We assume there's only one top-level directory in the tarball
 LLVM_SRC_DIR=$(find "${EXTRACT_DIR}" -mindepth 1 -maxdepth 1 -type d | head -n 1)
 
-if [ -z "${LLVM_SRC_DIR}" ]; then
+if [[ -z "${LLVM_SRC_DIR}" ]]; then
     echo "Error: Could not detect extracted directory in ${EXTRACT_DIR}"
     exit 1
 fi
 
 echo "Detected source directory: ${LLVM_SRC_DIR}"
 
-# --- Build ---
+# Build
 # Enter build directory
 cd "${BUILD_DIR}"
 
@@ -105,13 +105,13 @@ cp "${BUILD_DIR}/bin/clang-tidy" "${TOOLS_DIR}/bin/"
 # Copy clang internal headers (required for stdarg.h, stddef.h etc)
 # Clang tools need these relative to the binary (../lib/clang/<version>/include)
 # Search in BUILD_DIR/lib/clang and BUILD_DIR/lib64/clang
-if [ -d "${BUILD_DIR}/lib/clang" ]; then
+if [[ -d "${BUILD_DIR}/lib/clang" ]]; then
     echo "Copying clang internal headers (from lib/clang)..."
     cp -r "${BUILD_DIR}/lib/clang" "${TOOLS_DIR}/lib/"
-elif [ -d "${BUILD_DIR}/lib64/clang" ]; then
+elif [[ -d "${BUILD_DIR}/lib64/clang" ]]; then
     echo "Copying clang internal headers (from lib64/clang)..."
     cp -r "${BUILD_DIR}/lib64/clang" "${TOOLS_DIR}/lib/"
-elif [ -d "${BUILD_DIR}/lib" ]; then
+elif [[ -d "${BUILD_DIR}/lib" ]]; then
     # Fallback: copy entire lib directory if specific clang subdir not found
     echo "Copying library files (fallback)..."
     cp -r "${BUILD_DIR}/lib" "${TOOLS_DIR}/"
@@ -120,11 +120,11 @@ else
     exit 1
 fi
 
-# --- Verification & Cleanup ---
-if [ -f "${TOOLS_DIR}/bin/clang-format" ] && [ -f "${TOOLS_DIR}/bin/clang-tidy" ]; then
+# Verification & Cleanup
+if [[ -f "${TOOLS_DIR}/bin/clang-format" ]] && [[ -f "${TOOLS_DIR}/bin/clang-tidy" ]]; then
     echo "Success! Tools installed in ${TOOLS_DIR}"
     ls -l "${TOOLS_DIR}/bin"
-    if [ -d "${TOOLS_DIR}/lib/clang" ]; then
+    if [[ -d "${TOOLS_DIR}/lib/clang" ]]; then
         echo "Clang headers installed:"
         ls -d "${TOOLS_DIR}/lib/clang"/*
     fi
