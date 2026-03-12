@@ -14,8 +14,8 @@ LLVM_TARBALL=$(find "${PROJECT_ROOT}/third_party/llvm" -maxdepth 1 -name "llvm*.
 # Output directory for tools
 TOOLS_DIR="${PROJECT_ROOT}/tools"
 
-# Base directory for LLVM work (under third_party/stage)
-LLVM_WORK_DIR="${PROJECT_ROOT}/third_party/stage"
+# Base directory for LLVM work (under third_party/llvm)
+LLVM_WORK_DIR="${PROJECT_ROOT}/third_party/llvm"
 
 # Temporary directory for building
 BUILD_DIR="${LLVM_WORK_DIR}/build"
@@ -25,7 +25,7 @@ EXTRACT_DIR="${LLVM_WORK_DIR}/src"
 # --- Pre-flight Checks ---
 # Check if LLVM tarball exists
 if [ -z "${LLVM_TARBALL}" ]; then
-    echo "Error: No LLVM tarball (llvm*.tar.gz) found in ${PROJECT_ROOT}/third_party/stage"
+    echo "Error: No LLVM tarball (llvm*.tar.gz) found in ${LLVM_WORK_DIR}"
     exit 1
 fi
 

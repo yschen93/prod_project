@@ -8,6 +8,7 @@ show_help() {
   echo "Options:"
   echo "  --check       Run in dry-run mode (check only, exit 1 on error)"
   echo "  --format      Run in format mode (modify files in-place, default)"
+  echo "  --binary PATH Use a specific clang-format binary (absolute or relative path)"
   echo "  --help        Show this help message"
   echo
   echo "Arguments:"
@@ -22,6 +23,7 @@ show_help() {
 # Parse arguments
 MODE="format"
 TARGET_PATHS=()
+CLANG_FORMAT_BIN_OVERRIDE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -31,6 +33,19 @@ while [[ $# -gt 0 ]]; do
       ;;
     --format)
       MODE="format"
+      shift
+      ;;
+    --binary)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --binary requires a PATH"
+        show_help
+        exit 1
+      fi
+      CLANG_FORMAT_BIN_OVERRIDE="$2"
+      shift 2
+      ;;
+    --binary=*)
+      CLANG_FORMAT_BIN_OVERRIDE="${1#--binary=}"
       shift
       ;;
     --help)
@@ -53,16 +68,34 @@ done
 # Resolve project root and clang-format path
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
-CLANG_FORMAT_BIN="${PROJECT_ROOT}/tools/bin/clang-format"
+CLANG_FORMAT_BIN=""
 
-# Check if clang-format exists in tools/bin
-if [[ ! -x "${CLANG_FORMAT_BIN}" ]]; then
-  echo "Error: clang-format not found at ${CLANG_FORMAT_BIN}"
-  echo "Please ensure the tool is installed in tools/bin."
-  exit 1
+if [[ -n "${CLANG_FORMAT_BIN_OVERRIDE}" ]]; then
+  if [[ -x "${CLANG_FORMAT_BIN_OVERRIDE}" ]]; then
+    CLANG_FORMAT_BIN="${CLANG_FORMAT_BIN_OVERRIDE}"
+  elif [[ -x "${PROJECT_ROOT}/${CLANG_FORMAT_BIN_OVERRIDE}" ]]; then
+    CLANG_FORMAT_BIN="${PROJECT_ROOT}/${CLANG_FORMAT_BIN_OVERRIDE}"
+  else
+    echo "Error: clang-format not found or not executable at '${CLANG_FORMAT_BIN_OVERRIDE}'"
+    exit 1
+  fi
+else
+  if [[ -x "${PROJECT_ROOT}/tools/bin/clang-format" ]]; then
+    CLANG_FORMAT_BIN="${PROJECT_ROOT}/tools/bin/clang-format"
+  elif command -v clang-format >/dev/null 2>&1; then
+    CLANG_FORMAT_BIN="$(command -v clang-format)"
+  else
+    echo "Error: clang-format not found. Provide --binary PATH or install it in tools/bin."
+    exit 1
+  fi
 fi
 
 echo "Using clang-format: ${CLANG_FORMAT_BIN}"
+
+DIFF_SUPPORTS_COLOR=0
+if diff --help 2>/dev/null | grep -q -- "--color"; then
+  DIFF_SUPPORTS_COLOR=1
+fi
 
 # Determine where to search
 if [[ ${#TARGET_PATHS[@]} -eq 0 ]]; then
@@ -130,7 +163,11 @@ if [[ "${MODE}" == "check" ]]; then
     
     echo "Style violation in: ${FILE}"
     # Show the diff
-    "${CLANG_FORMAT_BIN}" "${FILE}" | diff -u "${FILE}" - --color=auto || true
+    if [[ ${DIFF_SUPPORTS_COLOR} -eq 1 ]]; then
+      "${CLANG_FORMAT_BIN}" "${FILE}" | diff -u "${FILE}" - --color=auto || true
+    else
+      "${CLANG_FORMAT_BIN}" "${FILE}" | diff -u "${FILE}" - || true
+    fi
     VIOLATIONS_FOUND=1
   done
 

@@ -151,10 +151,28 @@ target_compile_options(ubsan_target PRIVATE -fsanitize=undefined -g -O1)
 target_link_options(ubsan_target PRIVATE -fsanitize=undefined)
 
 # ThreadSanitizer (TSan)
-add_executable(tsan_target src/sanitizers/tsan/tsan_test.cpp)
-target_compile_options(tsan_target PRIVATE -fsanitize=thread -g -O1)
-target_link_options(tsan_target PRIVATE -fsanitize=thread)
-target_link_libraries(tsan_target PRIVATE Threads::Threads)
+set(tsan_runtime_ok OFF)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  execute_process(
+    COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libtsan_preinit.o
+    RESULT_VARIABLE tsan_preinit_query_result
+    OUTPUT_VARIABLE tsan_preinit_obj
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  if(tsan_preinit_query_result EQUAL 0 AND NOT tsan_preinit_obj STREQUAL "" AND NOT tsan_preinit_obj STREQUAL "libtsan_preinit.o")
+    set(tsan_runtime_ok ON)
+  endif()
+endif()
+
+if(tsan_runtime_ok)
+  add_executable(tsan_target src/sanitizers/tsan/tsan_test.cpp)
+  target_compile_options(tsan_target PRIVATE -fsanitize=thread -g -O1)
+  target_link_options(tsan_target PRIVATE -fsanitize=thread)
+  target_link_libraries(tsan_target PRIVATE Threads::Threads)
+else()
+  message(WARNING "TSan runtime not found for compiler '${CMAKE_CXX_COMPILER}'. Skipping tsan_target.")
+endif()
 
 # --- Performance Target ---
 
