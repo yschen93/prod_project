@@ -4,12 +4,24 @@
 
 ## 1. 工具要求
 
-项目强制使用项目本地的 `clang-format` 工具，以确保团队成员使用完全一致的版本。
+项目建议使用统一版本的 `clang-format` 工具，以确保团队成员使用完全一致的代码风格。
 
 - **工具位置**: `tools/bin/clang-format`
 - **配置文件**: 项目根目录下的 `.clang-format`
 
-**注意**：你不需要手动安装系统级的 `clang-format`。脚本会自动使用 `tools/bin` 下的版本。如果该位置没有工具，脚本会报错。
+**获取工具**:
+如果你没有安装 `clang-format`，可以使用以下脚本从源码编译并安装到 `tools/` 目录：
+
+1.  下载 LLVM 源码包（例如 `llvm-project-18.1.3.src.tar.xz`）并放置在 `third_party/llvm/` 目录下（需自行创建目录）。
+2.  运行脚本：
+
+```bash
+./scripts/build_llvm_tools.sh
+```
+
+此脚本会自动解压源码，编译 `clang-format` 和 `clang-tidy`，并安装到 `tools/bin/`。
+
+**注意**：脚本 `scripts/format_project.sh` 会优先查找 `tools/bin/clang-format`。如果未找到，它会尝试使用系统路径中的 `clang-format`。
 
 ## 2. 自动化脚本
 

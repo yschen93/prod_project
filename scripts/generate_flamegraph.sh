@@ -30,9 +30,15 @@ echo "Using perf command: ${PERF_CMD}"
 
 # Ensure FlameGraph tools are available
 if [[ ! -f "${FLAMEGRAPH_DIR}/flamegraph.pl" ]]; then
-    echo "Error: FlameGraph tools not found in ${FLAMEGRAPH_DIR}"
-    echo "Please ensure FlameGraph is installed (e.g., from tarball)"
-    exit 1
+    echo "FlameGraph tools not found in ${FLAMEGRAPH_DIR}"
+    echo "Extracting from tarball..."
+    mkdir -p "${FLAMEGRAPH_DIR}"
+    tar -xzf "${PROJECT_ROOT}/third_party/tarballs/FlameGraph-1.0.tar.gz" -C "${FLAMEGRAPH_DIR}" --strip-components=1
+    
+    if [[ ! -f "${FLAMEGRAPH_DIR}/flamegraph.pl" ]]; then
+        echo "Error: Failed to extract FlameGraph tools."
+        exit 1
+    fi
 fi
 
 # Build the target

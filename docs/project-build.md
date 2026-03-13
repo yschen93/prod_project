@@ -17,6 +17,20 @@
 - 构建目录：`prod_project/build/`
 - 交付输出目录：`prod_project/dist/`
 
+## 开发环境准备
+
+为了进行完整的开发和测试，建议先准备好 LLVM 工具链（clang-format, clang-tidy）。
+
+脚本：`scripts/build_llvm_tools.sh`
+
+**前提**：需将 LLVM 源码包放置在 `third_party/llvm/` 目录下。
+
+```bash
+./scripts/build_llvm_tools.sh
+```
+
+该脚本会编译 LLVM 工具，安装到 `tools/` 目录下。
+
 ## 项目编译与构建
 
 项目使用 `scripts/build_project.sh` 进行一键构建。该脚本会处理：
@@ -29,6 +43,28 @@
 
 ```bash
 ./scripts/build_project.sh
+```
+
+## 质量门禁 (Quality Gate)
+
+脚本：`scripts/quality_gate.sh`
+
+该脚本用于 CI/CD 流程或本地提交前检查，确保代码质量符合标准。它会执行：
+
+1.  **代码格式检查** (`--format`)：调用 `format_project.sh` 检查代码风格。
+2.  **单元测试** (`--test`)：运行所有单元测试。
+
+**用法：**
+
+```bash
+# 运行测试（默认）
+./scripts/quality_gate.sh
+
+# 运行格式检查
+./scripts/quality_gate.sh --format
+
+# 运行所有检查
+./scripts/quality_gate.sh --all
 ```
 
 ## 项目交付包打包（dist）

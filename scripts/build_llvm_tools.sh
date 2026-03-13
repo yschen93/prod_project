@@ -21,6 +21,12 @@ readonly EXTRACT_DIR="${LLVM_WORK_DIR}/src"
 
 # --- Main Execution ---
 
+if [[ ! -d "${LLVM_WORK_DIR}" ]]; then
+    echo "Error: LLVM work directory not found: ${LLVM_WORK_DIR}"
+    echo "Please download LLVM source tarball and place it there."
+    exit 1
+fi
+
 # Find LLVM tarball with wildcard pattern
 # Sort by name (version) descending and pick the first one to prefer newer versions if multiple exist
 LLVM_TARBALL=$(find "${LLVM_WORK_DIR}" -maxdepth 1 -name "llvm*.tar.gz" | sort -r | head -n 1)

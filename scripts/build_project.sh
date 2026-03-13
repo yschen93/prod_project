@@ -31,6 +31,7 @@ echo "Install prefix: ${install_prefix}"
 cmake -S "${REPO_ROOT}" -B "${build_root}" \
   -DCMAKE_BUILD_TYPE="${build_type}" \
   -DCMAKE_INSTALL_PREFIX="${install_prefix}" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DENABLE_CLANG_TIDY=OFF
 
 # Build

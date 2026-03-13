@@ -11,8 +11,8 @@
     - WSL2 环境可能需要手动安装特定版本的 `linux-tools` (如 `linux-tools-6.8.0-101-generic`)。
 
 2.  **FlameGraph**: 用于生成火焰图的 Perl 脚本工具集。
-    - 本项目已将工具集成在 `tools/FlameGraph/` 目录下。
-    - 核心脚本: `stackcollapse-perf.pl` (折叠堆栈) 和 `flamegraph.pl` (生成 SVG)。
+    - 脚本会查找 `tools/FlameGraph/` 目录。
+    - 如果该目录不存在，脚本会自动尝试从 `third_party/tarballs/FlameGraph-1.0.tar.gz` 解压。
 
 ## 2. 快速开始 (自动化脚本)
 

@@ -16,11 +16,11 @@
 - 调整了部分规则的严格程度（例如，允许隐式布尔转换）。
 
 ### 1.3 CMake 集成
-在 `CMakeLists.txt` 中添加了 `ENABLE_CLANG_TIDY` 选项（默认为 ON）。
+在 `CMakeLists.txt` 中添加了 `ENABLE_CLANG_TIDY` 选项（默认为 OFF）。
 通过设置 `CMAKE_CXX_CLANG_TIDY` 变量，在编译目标时会自动运行 `clang-tidy`。
 
 ```cmake
-option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 if(ENABLE_CLANG_TIDY)
   find_program(CLANG_TIDY clang-tidy)
   if(CLANG_TIDY)
@@ -55,18 +55,38 @@ cmake --build build
 
 ## 4. 自动化解决方案
 
-为了简化 `clang-tidy` 的使用，避免每次手动配置 CMake，提供了自动化脚本 `scripts/static_analysis.sh`。
+为了简化 `clang-tidy` 的使用，提供了脚本 `scripts/static_analysis.sh`。
 
 ### 用法
 
 ```bash
-./scripts/static_analysis.sh
+# 首先需要构建项目并生成 compile_commands.json
+./scripts/build_project.sh
+
+# 运行静态分析
+./scripts/static_analysis.sh [选项] [路径...]
 ```
 
-此脚本会自动：
-1. 配置 CMake 并启用 `ENABLE_CLANG_TIDY=ON`（如果尚未启用）。
-2. 执行清理并强制进行全量构建，以触发完整的代码扫描。
-3. 利用多核并行编译提高分析速度。
+### 功能
+
+此脚本使用 CMake 生成的 `compile_commands.json` 文件进行精确的静态分析。
+
+1.  **检查环境**: 检查 `build/compile_commands.json` 是否存在。
+2.  **自动修复**: 支持 `--fix` 选项，自动应用 clang-tidy 的修复建议。
+3.  **并行分析**: 支持并行执行，提高分析速度。
+4.  **灵活扫描**: 支持指定文件或目录进行扫描，若未指定则扫描所有源码。
+
+**注意**: 该脚本不会自动构建项目，请确保在运行前已执行过构建。
+
+### 安装工具
+
+如果系统中未安装 `clang-tidy`，可以使用以下脚本从源码编译并安装到 `tools/` 目录：
+
+**前提**：需将 LLVM 源码包放置在 `third_party/llvm/` 目录下。
+
+```bash
+./scripts/build_llvm_tools.sh
+```
 
 ## 5. 维护建议
 

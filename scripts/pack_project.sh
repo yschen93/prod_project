@@ -15,11 +15,11 @@ set -euo pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 readonly PROJECT_NAME="prod_project_delivery"
-readonly BUILD_ROOT="${REPO_ROOT}/build"
-readonly DIST_DIR="${REPO_ROOT}/dist"
-readonly STAGE_DIR="${DIST_DIR}/${PROJECT_NAME}"
-readonly TAR_NAME="${PROJECT_NAME}.tar.gz"
-readonly OUT_PATH="${DIST_DIR}/${TAR_NAME}"
+BUILD_ROOT="${REPO_ROOT}/build"
+DIST_DIR="${REPO_ROOT}/dist"
+STAGE_DIR="${DIST_DIR}/${PROJECT_NAME}"
+TAR_NAME="${PROJECT_NAME}.tar.gz"
+OUT_PATH="${DIST_DIR}/${TAR_NAME}"
 
 # --- Helper Functions ---
 
